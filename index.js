@@ -1,5 +1,5 @@
 const express = require('express');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const cors = require('cors');
 const app = express();
@@ -9,8 +9,8 @@ const port = process.env.PORT || 5000
 // mdromgana
 // JzeuaOruE7A4pXgL
 // middelwer
-app.get(cors());
-app.get(express.json());
+app.use(cors());
+app.use(express.json());
 
 
 
@@ -31,10 +31,32 @@ async function run() {
     await client.connect();
 
     const serviceCollection = client.db("carService").collection("services")
+    const productsCollection = client.db("carService").collection("products")
+    const bookingsCollection = client.db("carService").collection("Bookings")
 
     // services api
-    app.get('/service', cors(), async(req, res) => {
+    app.get('/services', async(req, res) => {
       const cursor = serviceCollection.find();
+      const result = await cursor.toArray();
+      res.send(result)
+    })
+
+    app.get('/services/:id', async(req, res) => {
+      const id = req.params.id;
+      const query = {_id: new ObjectId(id)}
+      const result = await serviceCollection.findOne(query)
+      res.send(result)
+    })
+
+    app.post('/bookings', async(req, res) => {
+      const booking = req.body;
+      const result = await bookingsCollection.insertOne(booking);
+      res.send(result)
+    })
+
+
+    app.get('/products', async(req, res) => {
+      const cursor = productsCollection.find();
       const result = await cursor.toArray();
       res.send(result)
     })
