@@ -54,7 +54,7 @@ async function run() {
       const user = req.body;
       console.log(user)
       const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
-        expiresIn: '1h'
+        expiresIn: '72h'
       });
       res.send({token})
     })
