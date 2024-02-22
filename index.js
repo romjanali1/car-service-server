@@ -3,12 +3,20 @@ const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 const app = express();
 const port = process.env.PORT || 5000
 
 // middelwer
-app.use(cors());
+app.use(cors({
+  origin: [
+    'http://localhost:5173'
+  ],
+  credentials: true
+}));
+
 app.use(express.json());
+app.use(cookieParser());
 
 
 
@@ -50,13 +58,23 @@ async function run() {
     const bookingsCollection = client.db("carService").collection("Bookings")
 
     //jwt
-    app.post('/jwt', (req, res) => {
+    app.post('/jwt', async (req, res) => {
       const user = req.body;
       console.log(user)
       const token = jwt.sign(user, process.env.ACCESS_TOKEN, {
         expiresIn: '72h'
       });
-      res.send({token})
+      res.cookie('token', token,{
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none'
+      })
+      .send({success: true});
+    })
+
+    app.post('/logout', async(req, res) =>{
+      const user = req.body;
+      res.clearCookie('token', {maxAge:0}).send({success: true})
     })
 
     // services api
