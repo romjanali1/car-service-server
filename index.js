@@ -31,6 +31,12 @@ const client = new MongoClient(uri, {
   }
 });
 
+// middlewear
+const logger = (req, res, next) =>{
+  console.log('log: info',req.method, req.url);
+  next();
+}
+
 const verifyJWT = (req, res,  next) => {
    const authorization = req.headers.authorization;
    if(!authorization){
@@ -39,11 +45,11 @@ const verifyJWT = (req, res,  next) => {
    const token = authorization.split(' ')[1];
 
    // verify a token symmetric
-   jwt.verify(token, process.env.ACCESS_TOKEN, (error, decoded) => {
+   jwt.verify(token, process.env.ACCESS_TOKEN, (error, token) => {
     if(error){
       return res.status(401).send({error:true, message:'Not veled access'})
     }
-    req.decoded = decoded;
+    req.token = token;
     next();
   });
   }
@@ -93,12 +99,12 @@ async function run() {
 
     // bookings
 
-    app.get('/bookings', verifyJWT,  async(req, res) => {
-      const decoded = req.decoded
+    app.get('/bookings', logger, async(req, res) => {
+      console.log(req.query.email);
       
-      if(decoded.email !== req.query.email){
-        return res.status(403).send({error: 1, message: 'unothorez access'})
-      }
+      // if(token.email !== req.query.email){
+      //   return res.status(403).send({error: 1, message: 'unothorez access'})
+      // }
       let query = {};
       if(req.query?.email){
         query = { email: req.query.email }
