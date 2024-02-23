@@ -102,7 +102,7 @@ async function run() {
     app.get('/bookings', logger,verifyJWT, async(req, res) => {
       console.log(req.query.email);
       
-      if(req.email !== req.query.email){
+      if(req.user.email !== req.query.email){
         return res.status(403).send({message: 'unothorez access'})
       }
       let query = {};
