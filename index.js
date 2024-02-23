@@ -37,19 +37,19 @@ const logger = (req, res, next) =>{
   next();
 }
 
-const verifyJWT = (req, res,  next) => {
-   const authorization = req.headers.authorization;
-   if(!authorization){
-    return res.status(401).send({error:true, message:'Not veled access'})
+const verifyJWT = (req, res, next) => {
+   const token = req?.cookies?.token;
+   if(!token){
+    return res.status(401).send({message:'Not veled access'})
    }
-   const token = authorization.split(' ')[1];
+  //  const token = authorization.split(' ')[1];
 
-   // verify a token symmetric
-   jwt.verify(token, process.env.ACCESS_TOKEN, (error, token) => {
-    if(error){
+  //  // verify a token symmetric
+   jwt.verify(token, process.env.ACCESS_TOKEN, (err, decoded) => {
+    if(err){
       return res.status(401).send({error:true, message:'Not veled access'})
     }
-    req.token = token;
+    req.user = decoded;
     next();
   });
   }
@@ -99,12 +99,12 @@ async function run() {
 
     // bookings
 
-    app.get('/bookings', logger, async(req, res) => {
+    app.get('/bookings', logger,verifyJWT, async(req, res) => {
       console.log(req.query.email);
       
-      // if(token.email !== req.query.email){
-      //   return res.status(403).send({error: 1, message: 'unothorez access'})
-      // }
+      if(req.email !== req.query.email){
+        return res.status(403).send({message: 'unothorez access'})
+      }
       let query = {};
       if(req.query?.email){
         query = { email: req.query.email }
